@@ -38,6 +38,11 @@ public class MinerAgent : MonoBehaviour
     private float deltaTime = 0f;
     #endregion
 
+    #region CONSTANTS
+    private string baseId = "base";
+    private string mineId = "mine";
+    #endregion
+
     #region ENUMS
     enum States
     {
@@ -97,7 +102,7 @@ public class MinerAgent : MonoBehaviour
     {
         fsm = new FSM((int)States._Count, (int)Flags._Count);
 
-        StartPathfiding("mine");
+        StartPathfiding(mineId);
         fsm.ForceCurretState((int)States.GoToMine);
 
         fsm.SetRelation((int)States.GoToMine, (int)Flags.OnReachMine, (int)States.Mining);
@@ -141,7 +146,7 @@ public class MinerAgent : MonoBehaviour
                 currentMiningTimer = 0.0f;
                 mineUses--;
 
-                StartPathfiding("base");
+                StartPathfiding(baseId);
                 fsm.SetFlag((int)Flags.OnFullInventory);
             }
         }, () =>
@@ -159,7 +164,7 @@ public class MinerAgent : MonoBehaviour
                 }
                 else
                 {
-                    StartPathfiding("mine");
+                    StartPathfiding(mineId);
                     fsm.SetFlag((int)Flags.OnReachDeposit);
                 }
             });
@@ -187,7 +192,7 @@ public class MinerAgent : MonoBehaviour
             {
                 currentReposingTimer = 0.0f;
 
-                StartPathfiding("mine");
+                StartPathfiding(mineId);
                 fsm.SetFlag((int)Flags.OnEndRepose);
             }
         });
@@ -200,18 +205,18 @@ public class MinerAgent : MonoBehaviour
 
     public void GoToRepose()
     {
-        StartPathfiding("repose");
+        StartPathfiding(baseId);
         fsm.SetFlag((int)Flags.OnStopMine);
-    }
-
-    public void SetPosition(Vector3 pos)
-    {
-        this.pos = pos;
-        posFlag = true;
     }
     #endregion
 
     #region PRIVATE_METHODS
+    private void SetPosition(Vector3 pos)
+    {
+        this.pos = pos;
+        posFlag = true;
+    }
+
     private void StartPathfiding(string siteId)
     {
         path = pathfinding.GetPath(onGetNodeByPosition?.Invoke(nodePos), onGetNodeBySiteId?.Invoke(siteId));
