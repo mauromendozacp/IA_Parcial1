@@ -13,27 +13,6 @@ public class Node
     }
     #endregion
 
-    #region STRUCTS
-    [System.Serializable]
-    public struct NodeWeight
-    {
-        public Vector2Int position;
-        public int weight;
-    }
-
-    public struct NodeCustom
-    {
-        public Vector2Int position;
-        public Color color;
-
-        public NodeCustom(Vector2Int position, Color color)
-        {
-            this.position = position;
-            this.color = color;
-        }
-    }
-    #endregion
-
     #region PUBLIC_FIELDS
     public int ID;
     public Vector2Int position;

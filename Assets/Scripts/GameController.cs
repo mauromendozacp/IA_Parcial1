@@ -7,20 +7,16 @@ public class GameController : MonoBehaviour
     [SerializeField] private MinersController minersController = null;
     #endregion
 
-    #region CONSTANTS
-    private string baseId = "base";
-    #endregion
-
     #region UNITY_CALLS
     private void Awake()
     {
         mapController.Init();
-        minersController.Init(mapController.GetNodeSitePositionById(baseId), mapController.GetNodeByPosition, mapController.GetNodeBySiteId);
+        minersController.Init(mapController.GetNodeSitePositionById(NodeUtils.baseId), mapController.GetNodeByPosition, mapController.GetNodeBySiteId);
     }
 
     private void Start()
     {
-        mapController.SpawnNodeSites();
+        mapController.SpawnSites();
         minersController.SpawnMiners(mapController.Map);
     }
     #endregion

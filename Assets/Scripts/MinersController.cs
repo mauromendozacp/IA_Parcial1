@@ -46,7 +46,7 @@ public class MinersController : MonoBehaviour
         this.onGetNodeByPosition = onGetNodeByPosition;
         this.onGetNodeBySiteId = onGetNodeBySiteId;
 
-        miners = new();
+        miners = new ConcurrentBag<MinerAgent>();
         parrallel = new ParallelOptions() { MaxDegreeOfParallelism = multiThreadngCount };
     }
 
@@ -59,7 +59,7 @@ public class MinersController : MonoBehaviour
 
             MinerAgent miner = minerGO.GetComponent<MinerAgent>();
             miner.SetCallbacks(onGetNodeByPosition, onGetNodeBySiteId);
-            miner.Init(pathfindingMode, map, UnityEngine.Random.Range(50f, 100f), basePosition);
+            miner.Init(pathfindingMode, map, basePosition);
             miner.StartMiner();
 
             miners.Add(miner);

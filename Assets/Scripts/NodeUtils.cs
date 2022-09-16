@@ -3,7 +3,11 @@ using UnityEngine;
 public static class NodeUtils
 {
     #region PUBLIC_FIELDS
-    public static Vector2Int MapSize;
+    public static Vector2Int MapSize = Vector2Int.zero;
+    public static List<Vector2Int> usedPositions = new List<Vector2Int>();
+
+    public const string baseId = "base";
+    public const string mineId = "mine";
     #endregion
 
     #region PUBLIC_METHODS

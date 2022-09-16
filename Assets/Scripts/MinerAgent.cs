@@ -38,11 +38,6 @@ public class MinerAgent : MonoBehaviour
     private float deltaTime = 0f;
     #endregion
 
-    #region CONSTANTS
-    private string baseId = "base";
-    private string mineId = "mine";
-    #endregion
-
     #region ENUMS
     enum States
     {
@@ -90,11 +85,12 @@ public class MinerAgent : MonoBehaviour
         this.onGetNodeBySiteId = onGetNodeBySiteId;
     }
 
-    public void Init(Pathfinding.MODE mode, Node[] map, float speedPercent, Vector2Int minerPos)
+    public void Init(Pathfinding.MODE mode, Node[] map, Vector2Int minerPos)
     {
         pathfinding = new Pathfinding(mode, map);
-        speedDelay = speedDelay * speedPercent / 100f;
+        speedDelay = speedDelay * UnityEngine.Random.Range(50f, 100f) / 100f;
         nodePos = minerPos;
+
         SetPosition(new Vector3(minerPos.x, minerPos.y, 0f));
     }
 
@@ -102,9 +98,34 @@ public class MinerAgent : MonoBehaviour
     {
         fsm = new FSM((int)States._Count, (int)Flags._Count);
 
-        StartPathfiding(mineId);
+        StartPathfiding(NodeUtils.mineId);
         fsm.ForceCurretState((int)States.GoToMine);
 
+        SetRelations();
+        SetBehaviors();
+    }
+
+    public void UpdateMiner()
+    {
+        fsm.Update();
+    }
+
+    public void GoToRepose()
+    {
+        StartPathfiding(NodeUtils.baseId);
+        fsm.SetFlag((int)Flags.OnStopMine);
+    }
+    #endregion
+
+    #region PRIVATE_METHODS
+    private void SetPosition(Vector3 pos)
+    {
+        this.pos = pos;
+        posFlag = true;
+    }
+
+    private void SetRelations()
+    {
         fsm.SetRelation((int)States.GoToMine, (int)Flags.OnReachMine, (int)States.Mining);
         fsm.SetRelation((int)States.Mining, (int)Flags.OnFullInventory, (int)States.GoToDeposit);
         fsm.SetRelation((int)States.GoToDeposit, (int)Flags.OnReachDeposit, (int)States.GoToMine);
@@ -115,7 +136,10 @@ public class MinerAgent : MonoBehaviour
         fsm.SetRelation((int)States.GoToDeposit, (int)Flags.OnStopMine, (int)States.GoToRepose);
         fsm.SetRelation((int)States.GoToRepose, (int)Flags.OnReachRepose, (int)States.Reposing);
         fsm.SetRelation((int)States.Reposing, (int)Flags.OnEndRepose, (int)States.Mining);
+    }
 
+    private void SetBehaviors()
+    {
         fsm.AddBehaviour((int)States.Idle, () =>
         {
             Debug.Log("Idle");
@@ -146,7 +170,7 @@ public class MinerAgent : MonoBehaviour
                 currentMiningTimer = 0.0f;
                 mineUses--;
 
-                StartPathfiding(baseId);
+                StartPathfiding(NodeUtils.baseId);
                 fsm.SetFlag((int)Flags.OnFullInventory);
             }
         }, () =>
@@ -164,7 +188,7 @@ public class MinerAgent : MonoBehaviour
                 }
                 else
                 {
-                    StartPathfiding(mineId);
+                    StartPathfiding(NodeUtils.mineId);
                     fsm.SetFlag((int)Flags.OnReachDeposit);
                 }
             });
@@ -192,29 +216,10 @@ public class MinerAgent : MonoBehaviour
             {
                 currentReposingTimer = 0.0f;
 
-                StartPathfiding(mineId);
+                StartPathfiding(NodeUtils.mineId);
                 fsm.SetFlag((int)Flags.OnEndRepose);
             }
         });
-    }
-
-    public void UpdateMiner()
-    {
-        fsm.Update();
-    }
-
-    public void GoToRepose()
-    {
-        StartPathfiding(baseId);
-        fsm.SetFlag((int)Flags.OnStopMine);
-    }
-    #endregion
-
-    #region PRIVATE_METHODS
-    private void SetPosition(Vector3 pos)
-    {
-        this.pos = pos;
-        posFlag = true;
     }
 
     private void StartPathfiding(string siteId)

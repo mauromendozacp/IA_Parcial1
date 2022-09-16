@@ -1,19 +1,33 @@
 using System.Collections.Generic;
+
 using UnityEditor;
 using UnityEngine;
 
 public class MapController : MonoBehaviour
 {
     #region EXPOSED_FIELDS
+    [Header("General Settings")]
+    [SerializeField] private MineController mineController = null;
+    [SerializeField] private Transform holder = null;
+
+    [Header("Map Settings")]
     [SerializeField] private Vector2Int mapSize = Vector2Int.zero;
-    [SerializeField] private Transform sitesHolder = null;
-    [SerializeField] private List<NodeSite> nodeSites = null;
     [SerializeField] private List<Vector2Int> blockeds = null;
-    [SerializeField] private List<Node.NodeWeight> weights = null;
+    [SerializeField] private List<NodeWeight> weights = null;
+
+    [Header("Base Settings")]
+    [SerializeField] private GameObject basePrefab = null;
+    [SerializeField] private Vector2Int basePosition = default;
     #endregion
 
     #region PRIVATE_FIELDS
     private Node[] map = null;
+
+    private List<NodeSite> nodeSites = null;
+    #endregion
+
+    #region CONSTANTS
+
     #endregion
 
     #region PROPERTIES
@@ -26,7 +40,19 @@ public class MapController : MonoBehaviour
     {
         public string id;
         public Vector2Int position;
-        public GameObject prefab;
+
+        public NodeSite(string id, Vector2Int position)
+        {
+            this.id = id;
+            this.position = position;
+        }
+    }
+
+    [System.Serializable]
+    public struct NodeWeight
+    {
+        public Vector2Int position;
+        public int weight;
     }
     #endregion
 
@@ -40,10 +66,13 @@ public class MapController : MonoBehaviour
 
         foreach (Node node in map)
         {
-            Gizmos.color = node.color;
-
             Vector3 worldPosition = new Vector3(node.position.x, node.position.y, 0.0f);
+
+            Gizmos.color = Color.white;
             Gizmos.DrawWireCube(worldPosition, Vector3.one);
+
+            Gizmos.color = node.color;
+            Gizmos.DrawWireSphere(worldPosition, .5f);
             Handles.Label(worldPosition, node.position.ToString(), style);
         }
     }
@@ -55,17 +84,24 @@ public class MapController : MonoBehaviour
         NodeUtils.MapSize = mapSize;
         map = new Node[mapSize.x * mapSize.y];
 
+        NodeUtils.usedPositions.AddRange(blockeds);
+        NodeUtils.usedPositions.Add(basePosition);
+
+        nodeSites = new List<NodeSite>();
+        nodeSites.Add(new NodeSite(NodeUtils.baseId, basePosition));
+
         SetMapData();
+        mineController.Init(null);
     }
 
-    public void SpawnNodeSites()
+    public void SpawnSites()
     {
-        for (int i = 0; i < nodeSites.Count; i++)
-        {
-            GameObject siteGO = Instantiate(nodeSites[i].prefab, sitesHolder);
-            Vector2Int intPosition = GetNodeSitePositionById(nodeSites[i].id);
+        SpawnBase();
+        mineController.SpawnMines();
 
-            siteGO.transform.position = new Vector3(intPosition.x, intPosition.y, 0f);
+        for (int i = 0; i < mineController.Mines.Count; i++)
+        {
+            nodeSites.Add(new NodeSite(NodeUtils.mineId, mineController.Mines[i].Position));
         }
     }
 
@@ -114,6 +150,12 @@ public class MapController : MonoBehaviour
         {
             map[NodeUtils.PositionToIndex(weights[i].position)].SetWeight(weights[i].weight);
         }
+    }
+
+    private void SpawnBase()
+    {
+        GameObject baseGO = Instantiate(basePrefab, holder);
+        baseGO.transform.position = new Vector3(basePosition.x, basePosition.y, 0f);
     }
     #endregion
 }
