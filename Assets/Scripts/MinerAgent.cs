@@ -37,11 +37,10 @@ public class MinerAgent : MonoBehaviour
     private Vector2Int nodePos = Vector2Int.zero;
     private Vector3 targetPos = Vector3.zero;
 
-    private float reposingTime = 5f;
     private float miningTimer = 0f;
-    private float currentReposingTimer = 0f;
     private float currentPathTimer = 0f;
     private float currentPositionTimer = 0f;
+    private bool reposing = false;
     private bool waitPosition = false;
 
     private int currentMoney = 0;
@@ -125,12 +124,24 @@ public class MinerAgent : MonoBehaviour
         fsm.Update();
     }
 
-    public void GoToRepose()
+    public void SwitchRepose()
     {
-        StartPathfiding(NodeUtils.baseId, () =>
+        reposing = !reposing;
+
+        if (reposing)
         {
-            fsm.SetFlag((int)Flags.OnStopMine);
-        });
+            StartPathfiding(NodeUtils.baseId, () =>
+            {
+                fsm.SetFlag((int)Flags.OnStopMine);
+            });
+        }
+        else
+        {
+            StartPathfiding(NodeUtils.mineId, () =>
+            {
+                fsm.SetFlag((int)Flags.OnEndRepose);
+            });
+        }
     }
     #endregion
 
@@ -153,7 +164,8 @@ public class MinerAgent : MonoBehaviour
         fsm.SetRelation((int)States.Mining, (int)Flags.OnStopMine, (int)States.GoToRepose);
         fsm.SetRelation((int)States.GoToDeposit, (int)Flags.OnStopMine, (int)States.GoToRepose);
         fsm.SetRelation((int)States.GoToRepose, (int)Flags.OnReachRepose, (int)States.Reposing);
-        fsm.SetRelation((int)States.Reposing, (int)Flags.OnEndRepose, (int)States.Mining);
+        fsm.SetRelation((int)States.GoToRepose, (int)Flags.OnEndRepose, (int)States.GoToMine);
+        fsm.SetRelation((int)States.Reposing, (int)Flags.OnEndRepose, (int)States.GoToMine);
     }
 
     private void SetBehaviors()
@@ -237,23 +249,19 @@ public class MinerAgent : MonoBehaviour
             {
                 fsm.SetFlag((int)Flags.OnReachRepose);
             });
+        },
+        () =>
+        {
+            fsm.SetFlag((int)Flags.OnEndRepose);
         });
 
         fsm.AddBehaviour((int)States.Reposing, () =>
         {
-            if (currentReposingTimer < reposingTime)
-            {
-                currentReposingTimer += deltaTime;
-            }
-            else
-            {
-                currentReposingTimer = 0.0f;
-
-                StartPathfiding(NodeUtils.mineId, () =>
-                {
-                    fsm.SetFlag((int)Flags.OnEndRepose);
-                });
-            }
+            Debug.Log("Reposing");
+        },
+        () =>
+        {
+            fsm.SetFlag((int)Flags.OnEndRepose);
         });
     }
 

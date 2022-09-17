@@ -66,7 +66,10 @@ public class MinersController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            GetTryMiner()?.GoToRepose();
+            Parallel.ForEach(miners, parrallel, minedou =>
+            {
+                minedou.SwitchRepose();
+            });
         }
     }
 
