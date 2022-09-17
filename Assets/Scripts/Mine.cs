@@ -1,10 +1,12 @@
 using System;
+using TMPro;
 using UnityEngine;
 
 public class Mine : MonoBehaviour
 {
     #region EXPOSED_FIELDS
     [SerializeField] private int amount = 0;
+    [SerializeField] private TMP_Text amountText = null;
     #endregion
 
     #region PRIVATE_FIELDS
@@ -13,6 +15,8 @@ public class Mine : MonoBehaviour
     private int id = 0;
     private Vector2Int position = Vector2Int.zero;
     private bool isEmpty = false;
+
+    private bool flag = false;
     #endregion
 
     #region PROPERTIES
@@ -21,12 +25,24 @@ public class Mine : MonoBehaviour
     public bool IsEmpty { get => isEmpty; }
     #endregion
 
+    #region UNITY_CALLS
+    private void Update()
+    {
+        if (!flag) return;
+
+        amountText.text = amount.ToString();
+        flag = false;
+    }
+    #endregion
+
     #region PUBLIC_METHODS
     public void Init(int id, Vector2Int position, Action<int> onEmpty)
     {
         this.id = id;
         this.position = position;
         this.onEmpty = onEmpty;
+
+        amountText.text = amount.ToString();
     }
 
     public int Take(int substract)
@@ -41,7 +57,7 @@ public class Mine : MonoBehaviour
                 SetEmpty();
             }
 
-            amount -= substract;
+            SetAmount(amount - substract);
 
             return substract;
         }
@@ -55,6 +71,17 @@ public class Mine : MonoBehaviour
     {
         isEmpty = true;
         onEmpty?.Invoke(id);
+    }
+
+    private void SetAmount(int amount)
+    {
+        if (amount < 0)
+        {
+            amount = 0;
+        }
+        this.amount = amount;
+
+        flag = true;
     }
     #endregion
 }

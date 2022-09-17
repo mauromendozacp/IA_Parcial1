@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class MActions
 {
+    public Action<int> onDeposit = null;
+
     public Func<Vector2Int, Node> onGetNodeByPosition = null;
     public Func<string, Node> onGetNodeBySiteId = null;
     public Func<Mine> onGetMineCloser = null;
@@ -71,6 +73,7 @@ public class MinerAgent : MonoBehaviour
         OnReachMine,
         OnReachDeposit,
         OnReachRepose,
+        OnFindOtherMine,
         OnEmptyMine,
         OnStopMine,
 
@@ -142,6 +145,7 @@ public class MinerAgent : MonoBehaviour
     {
         fsm.SetRelation((int)States.GoToMine, (int)Flags.OnReachMine, (int)States.Mining);
         fsm.SetRelation((int)States.Mining, (int)Flags.OnFullInventory, (int)States.GoToDeposit);
+        fsm.SetRelation((int)States.Mining, (int)Flags.OnFindOtherMine, (int)States.GoToMine);
         fsm.SetRelation((int)States.GoToDeposit, (int)Flags.OnReachDeposit, (int)States.GoToMine);
         fsm.SetRelation((int)States.GoToDeposit, (int)Flags.OnEmptyMine, (int)States.Idle);
 
@@ -175,16 +179,26 @@ public class MinerAgent : MonoBehaviour
 
         fsm.AddBehaviour((int)States.Mining, () =>
         {
-            if (!targetMine.IsEmpty && currentMoney < maxMoney)
+            if (currentMoney < maxMoney && targetMine != null)
             {
-                if (miningTimer < recolectDelay)
+                if (!targetMine.IsEmpty)
                 {
-                    miningTimer += deltaTime;
+                    if (miningTimer < recolectDelay)
+                    {
+                        miningTimer += deltaTime;
+                    }
+                    else
+                    {
+                        miningTimer = 0.0f;
+                        currentMoney += targetMine.Take(takeMoney);
+                    }
                 }
                 else
                 {
-                    miningTimer = 0.0f;
-                    currentMoney += targetMine.Take(takeMoney);
+                    StartPathfiding(NodeUtils.mineId, () =>
+                    {
+                        fsm.SetFlag((int)Flags.OnFindOtherMine);
+                    });
                 }
             }
             else
@@ -203,6 +217,7 @@ public class MinerAgent : MonoBehaviour
         {
             UpdatePath(() =>
             {
+                mActions.onDeposit?.Invoke(currentMoney);
                 currentMoney = 0;
 
                 StartPathfiding(NodeUtils.mineId, () =>

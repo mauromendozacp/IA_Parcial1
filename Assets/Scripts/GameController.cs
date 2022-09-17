@@ -13,6 +13,7 @@ public class GameController : MonoBehaviour
         mapController.Init();
 
         MActions mActions = new MActions();
+        mActions.onDeposit = mapController.DepositMoneyInBase;
         mActions.onGetNodeByPosition = mapController.GetNodeByPosition;
         mActions.onGetNodeBySiteId = mapController.GetNodeBySiteId;
         mActions.onGetMineCloser = mapController.GetMineCloser;

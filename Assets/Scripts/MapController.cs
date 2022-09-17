@@ -24,6 +24,7 @@ public class MapController : MonoBehaviour
     #region PRIVATE_FIELDS
     private Node[] map = null;
 
+    private MinerBase minerBase = null;
     private List<NodeSite> nodeSites = null;
     #endregion
 
@@ -106,6 +107,11 @@ public class MapController : MonoBehaviour
         return voronoiController.GetMineCloser(mineController.Mines);
     }
 
+    public void DepositMoneyInBase(int money)
+    {
+        minerBase.Deposit(money);
+    }
+
     public Vector2Int GetNodeSitePositionById(string id)
     {
         for (int i = 0; i < nodeSites.Count; i++)
@@ -157,6 +163,8 @@ public class MapController : MonoBehaviour
     {
         GameObject baseGO = Instantiate(basePrefab, holder);
         baseGO.transform.position = new Vector3(basePosition.x, basePosition.y, 0f);
+
+        minerBase = baseGO.GetComponent<MinerBase>();
     }
     #endregion
 }
