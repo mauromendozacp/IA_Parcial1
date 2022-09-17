@@ -3,11 +3,14 @@ using UnityEngine;
 
 public class Mine : MonoBehaviour
 {
+    #region EXPOSED_FIELDS
+    [SerializeField] private int amount = 0;
+    #endregion
+
     #region PRIVATE_FIELDS
     private Action<int> onEmpty = null;
 
     private int id = 0;
-    private int amount = 0;
     private Vector2Int position = Vector2Int.zero;
     private bool isEmpty = false;
     #endregion
@@ -19,15 +22,14 @@ public class Mine : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(int id, int amount, Vector2Int position, Action<int> onEmpty)
+    public void Init(int id, Vector2Int position, Action<int> onEmpty)
     {
         this.id = id;
-        this.amount = amount;
         this.position = position;
         this.onEmpty = onEmpty;
     }
 
-    public int Use(int substract)
+    public int Take(int substract)
     {
         if (!isEmpty)
         {

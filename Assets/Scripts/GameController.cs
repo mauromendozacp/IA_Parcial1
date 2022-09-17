@@ -11,13 +11,19 @@ public class GameController : MonoBehaviour
     private void Awake()
     {
         mapController.Init();
-        minersController.Init(mapController.GetNodeSitePositionById(NodeUtils.baseId), mapController.GetNodeByPosition, mapController.GetNodeBySiteId);
+
+        MActions mActions = new MActions();
+        mActions.onGetNodeByPosition = mapController.GetNodeByPosition;
+        mActions.onGetNodeBySiteId = mapController.GetNodeBySiteId;
+        mActions.onGetMineCloser = mapController.GetMineCloser;
+
+        minersController.Init(mActions);
     }
 
     private void Start()
     {
         mapController.SpawnSites();
-        minersController.SpawnMiners(mapController.Map);
+        minersController.SpawnMiners(mapController.Map, mapController.GetNodeSitePositionById(NodeUtils.baseId));
     }
     #endregion
 }

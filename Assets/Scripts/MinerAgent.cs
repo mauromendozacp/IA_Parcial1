@@ -3,9 +3,22 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
+public class MActions
+{
+    public Func<Vector2Int, Node> onGetNodeByPosition = null;
+    public Func<string, Node> onGetNodeBySiteId = null;
+    public Func<Mine> onGetMineCloser = null;
+}
+
 public class MinerAgent : MonoBehaviour
 {
     #region EXPOSED_FIELDS
+    [Header("Money Settings")]
+    [SerializeField] private int maxMoney = 0;
+    [SerializeField] private int takeMoney = 0;
+    [SerializeField] private float recolectDelay = 0f;
+
+    [Header("Move Settings")]
     [SerializeField] private float positionDelay = 0f;
     [SerializeField] private float speedDelay = 0f;
     #endregion
@@ -17,20 +30,20 @@ public class MinerAgent : MonoBehaviour
     private List<Vector2Int> path = null;
     private int pathIndex = 0;
 
-    private Func<Vector2Int, Node> onGetNodeByPosition = null;
-    private Func<string, Node> onGetNodeBySiteId = null;
+    private MActions mActions = null;
 
     private Vector2Int nodePos = Vector2Int.zero;
     private Vector3 targetPos = Vector3.zero;
 
-    private int mineUses = 10;
-    private float miningTime = 5f;
     private float reposingTime = 5f;
-    private float currentMiningTimer = 0f;
+    private float miningTimer = 0f;
     private float currentReposingTimer = 0f;
     private float currentPathTimer = 0f;
     private float currentPositionTimer = 0f;
     private bool waitPosition = false;
+
+    private int currentMoney = 0;
+    private Mine targetMine = null;
 
     private Vector3 pos = Vector3.zero;
     private bool posFlag = false;
@@ -79,15 +92,12 @@ public class MinerAgent : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void SetCallbacks(Func<Vector2Int, Node> onGetNodeByPosition, Func<string, Node> onGetNodeBySiteId)
+    public void Init(MActions mActions, Pathfinding.MODE mode, Node[] map, Vector2Int minerPos)
     {
-        this.onGetNodeByPosition = onGetNodeByPosition;
-        this.onGetNodeBySiteId = onGetNodeBySiteId;
-    }
+        this.mActions = mActions;
 
-    public void Init(Pathfinding.MODE mode, Node[] map, Vector2Int minerPos)
-    {
         pathfinding = new Pathfinding(mode, map);
+
         speedDelay = speedDelay * UnityEngine.Random.Range(50f, 100f) / 100f;
         nodePos = minerPos;
 
@@ -98,8 +108,10 @@ public class MinerAgent : MonoBehaviour
     {
         fsm = new FSM((int)States._Count, (int)Flags._Count);
 
-        StartPathfiding(NodeUtils.mineId);
-        fsm.ForceCurretState((int)States.GoToMine);
+        StartPathfiding(NodeUtils.mineId, () =>
+        {
+            fsm.ForceCurretState((int)States.GoToMine);
+        });
 
         SetRelations();
         SetBehaviors();
@@ -112,8 +124,10 @@ public class MinerAgent : MonoBehaviour
 
     public void GoToRepose()
     {
-        StartPathfiding(NodeUtils.baseId);
-        fsm.SetFlag((int)Flags.OnStopMine);
+        StartPathfiding(NodeUtils.baseId, () =>
+        {
+            fsm.SetFlag((int)Flags.OnStopMine);
+        });
     }
     #endregion
 
@@ -161,17 +175,24 @@ public class MinerAgent : MonoBehaviour
 
         fsm.AddBehaviour((int)States.Mining, () =>
         {
-            if (currentMiningTimer < miningTime)
+            if (!targetMine.IsEmpty && currentMoney < maxMoney)
             {
-                currentMiningTimer += deltaTime;
+                if (miningTimer < recolectDelay)
+                {
+                    miningTimer += deltaTime;
+                }
+                else
+                {
+                    miningTimer = 0.0f;
+                    currentMoney += targetMine.Take(takeMoney);
+                }
             }
             else
             {
-                currentMiningTimer = 0.0f;
-                mineUses--;
-
-                StartPathfiding(NodeUtils.baseId);
-                fsm.SetFlag((int)Flags.OnFullInventory);
+                StartPathfiding(NodeUtils.baseId, () =>
+                {
+                    fsm.SetFlag((int)Flags.OnFullInventory);
+                });
             }
         }, () =>
         {
@@ -182,15 +203,12 @@ public class MinerAgent : MonoBehaviour
         {
             UpdatePath(() =>
             {
-                if (mineUses <= 0)
+                currentMoney = 0;
+
+                StartPathfiding(NodeUtils.mineId, () =>
                 {
-                    fsm.SetFlag((int)Flags.OnEmptyMine);
-                }
-                else
-                {
-                    StartPathfiding(NodeUtils.mineId);
                     fsm.SetFlag((int)Flags.OnReachDeposit);
-                }
+                });
             });
         },
         () =>
@@ -216,17 +234,19 @@ public class MinerAgent : MonoBehaviour
             {
                 currentReposingTimer = 0.0f;
 
-                StartPathfiding(NodeUtils.mineId);
-                fsm.SetFlag((int)Flags.OnEndRepose);
+                StartPathfiding(NodeUtils.mineId, () =>
+                {
+                    fsm.SetFlag((int)Flags.OnEndRepose);
+                });
             }
         });
     }
 
-    private void StartPathfiding(string siteId)
+    private void StartPathfiding(string siteId, Action onSuccess)
     {
-        path = pathfinding.GetPath(onGetNodeByPosition?.Invoke(nodePos), onGetNodeBySiteId?.Invoke(siteId));
+        path = pathfinding.GetPath(mActions.onGetNodeByPosition?.Invoke(nodePos), GetNodePath(siteId));
 
-        if (path != null)
+        if (path != null && path.Count > 0)
         {
             nodePos = path[0];
             targetPos = new Vector3(path[0].x, path[0].y, 0f);
@@ -236,6 +256,12 @@ public class MinerAgent : MonoBehaviour
             currentPositionTimer = 0f;
 
             SetPosition(new Vector3(path[0].x, path[0].y, 0f));
+
+            onSuccess?.Invoke();
+        }
+        else
+        {
+            fsm.SetFlag((int)Flags.OnEmptyMine);
         }
     }
 
@@ -278,6 +304,27 @@ public class MinerAgent : MonoBehaviour
                 waitPosition = false;
             }
         }
+    }
+
+    private Node GetNodePath(string id)
+    {
+        Node node = null;
+
+        if (id == NodeUtils.baseId)
+        {
+            node = mActions.onGetNodeBySiteId?.Invoke(id);
+        }
+        else if (id == NodeUtils.mineId)
+        {
+            targetMine = mActions.onGetMineCloser?.Invoke();
+
+            if (targetMine != null)
+            {
+                node = mActions.onGetNodeByPosition?.Invoke(targetMine.Position);
+            }
+        }
+
+        return node;
     }
     #endregion
 }

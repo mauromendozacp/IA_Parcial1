@@ -17,10 +17,7 @@ public class MinersController : MonoBehaviour
     private ConcurrentBag<MinerAgent> miners = null;
     private ParallelOptions parrallel = null;
 
-    private Vector2Int basePosition = Vector2Int.zero;
-
-    private Func<Vector2Int, Node> onGetNodeByPosition = null;
-    private Func<string, Node> onGetNodeBySiteId = null;
+    private MActions mActions = null;
     #endregion
 
     #region CONSTANTS
@@ -40,17 +37,15 @@ public class MinersController : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(Vector2Int basePosition, Func<Vector2Int, Node> onGetNodeByPosition, Func<string, Node> onGetNodeBySiteId)
+    public void Init(MActions mActions)
     {
-        this.basePosition = basePosition;
-        this.onGetNodeByPosition = onGetNodeByPosition;
-        this.onGetNodeBySiteId = onGetNodeBySiteId;
+        this.mActions = mActions;
 
         miners = new ConcurrentBag<MinerAgent>();
         parrallel = new ParallelOptions() { MaxDegreeOfParallelism = multiThreadngCount };
     }
 
-    public void SpawnMiners(Node[] map)
+    public void SpawnMiners(Node[] map, Vector2Int basePosition)
     {
         for (int i = 0; i < minersLength; i++)
         {
@@ -58,8 +53,7 @@ public class MinersController : MonoBehaviour
             minerGO.transform.position = new Vector3(basePosition.x, basePosition.y, 0f);
 
             MinerAgent miner = minerGO.GetComponent<MinerAgent>();
-            miner.SetCallbacks(onGetNodeByPosition, onGetNodeBySiteId);
-            miner.Init(pathfindingMode, map, basePosition);
+            miner.Init(mActions, pathfindingMode, map, basePosition);
             miner.StartMiner();
 
             miners.Add(miner);

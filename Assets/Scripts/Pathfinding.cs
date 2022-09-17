@@ -29,7 +29,12 @@ public class Pathfinding
     {
         this.mode = mode;
 
-        this.map = map;
+        this.map = new Node[map.Length];
+        for (int i = 0; i < this.map.Length; i++)
+        {
+            this.map[i] = new Node(map[i].ID, map[i].position);
+        }
+
         openedNodeIds = new List<int>();
         closedNodeIds = new List<int>();
     }
@@ -38,6 +43,8 @@ public class Pathfinding
     #region PUBLIC_METHODS
     public List<Vector2Int> GetPath(Node origin, Node destination)
     {
+        if (origin == null || destination == null) return null;
+
         Reset();
 
         openedNodeIds.Add(origin.ID);
@@ -70,11 +77,6 @@ public class Pathfinding
 
         List<Vector2Int> path = GeneratePath(map, currentNode);
         return path;
-    }
-
-    public Node[] GetMap()
-    {
-        return map;
     }
     #endregion
 

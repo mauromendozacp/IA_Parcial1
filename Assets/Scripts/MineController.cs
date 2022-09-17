@@ -9,7 +9,6 @@ public class MineController : MonoBehaviour
     [SerializeField] private GameObject prefab = null;
     [SerializeField] private Transform holder = null;
     [SerializeField] private int length = 0;
-    [SerializeField] private int money = 0;
     #endregion
 
     #region PRIVATE_FIELDS
@@ -46,7 +45,7 @@ public class MineController : MonoBehaviour
             mineGO.transform.position = new Vector3(position.x, position.y, 0f);
 
             Mine mine = mineGO.GetComponent<Mine>();
-            mine.Init(i, money, position, OnMineEmpty);
+            mine.Init(i, position, OnMineEmpty);
 
             minesList.Add(mine);
         }

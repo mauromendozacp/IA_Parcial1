@@ -7,6 +7,7 @@ public class MapController : MonoBehaviour
 {
     #region EXPOSED_FIELDS
     [Header("General Settings")]
+    [SerializeField] private VoronoiController voronoiController = null;
     [SerializeField] private MineController mineController = null;
     [SerializeField] private Transform holder = null;
 
@@ -24,10 +25,6 @@ public class MapController : MonoBehaviour
     private Node[] map = null;
 
     private List<NodeSite> nodeSites = null;
-    #endregion
-
-    #region CONSTANTS
-
     #endregion
 
     #region PROPERTIES
@@ -70,9 +67,6 @@ public class MapController : MonoBehaviour
 
             Gizmos.color = Color.white;
             Gizmos.DrawWireCube(worldPosition, Vector3.one);
-
-            Gizmos.color = node.color;
-            Gizmos.DrawWireSphere(worldPosition, .5f);
             Handles.Label(worldPosition, node.position.ToString(), style);
         }
     }
@@ -91,7 +85,9 @@ public class MapController : MonoBehaviour
         nodeSites.Add(new NodeSite(NodeUtils.baseId, basePosition));
 
         SetMapData();
+
         mineController.Init(null);
+        voronoiController.Init(GetNodeSitePositionById);
     }
 
     public void SpawnSites()
@@ -103,6 +99,11 @@ public class MapController : MonoBehaviour
         {
             nodeSites.Add(new NodeSite(NodeUtils.mineId, mineController.Mines[i].Position));
         }
+    }
+
+    public Mine GetMineCloser()
+    {
+        return voronoiController.GetMineCloser(mineController.Mines);
     }
 
     public Vector2Int GetNodeSitePositionById(string id)
