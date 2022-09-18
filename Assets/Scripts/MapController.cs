@@ -20,6 +20,10 @@ public class MapController : MonoBehaviour
     [Header("Base Settings")]
     [SerializeField] private GameObject basePrefab = null;
     [SerializeField] private Vector2Int basePosition = default;
+
+    [Header("Block Settings")]
+    [SerializeField] private Transform blockHolder = null;
+    [SerializeField] private GameObject blockPrefab = null;
     #endregion
 
     #region PRIVATE_FIELDS
@@ -36,7 +40,7 @@ public class MapController : MonoBehaviour
     #endregion
 
     #region STRUCTS
-    [System.Serializable]
+    [Serializable]
     public struct NodeSite
     {
         public string id;
@@ -49,7 +53,7 @@ public class MapController : MonoBehaviour
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public struct NodeWeight
     {
         public Vector2Int position;
@@ -64,6 +68,8 @@ public class MapController : MonoBehaviour
             return;
 
         SetSpecialNodes();
+        SpawnBlocks();
+
         onUpdateMap?.Invoke(map);
     }
 
@@ -119,11 +125,27 @@ public class MapController : MonoBehaviour
     public void SpawnSites()
     {
         SpawnBase();
+        SpawnBlocks();
         mineController.SpawnMines();
 
         for (int i = 0; i < mineController.Mines.Count; i++)
         {
             nodeSites.Add(new NodeSite(NodeUtils.mineId, mineController.Mines[i].Position));
+        }
+    }
+
+    public void SpawnBlocks()
+    {
+        for (int i = 0; i < blockHolder.childCount; i++)
+        {
+            GameObject blockGO = blockHolder.GetChild(i).gameObject;
+            Destroy(blockGO);
+        }
+
+        for (int i = 0; i < blockeds.Count; i++)
+        {
+            GameObject blockGO = Instantiate(blockPrefab, blockHolder);
+            blockGO.transform.position = new Vector3(blockeds[i].x, blockeds[i].y, 0f);
         }
     }
 

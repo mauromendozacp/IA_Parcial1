@@ -13,12 +13,16 @@ public class MinerBase : MonoBehaviour
     private bool flag = false;
     #endregion
 
+    #region CONSTANTS
+    private const string coinText = "<sprite=0> ";
+    #endregion
+
     #region UNITY_CALLS
     private void Update()
     {
         if (!flag) return;
 
-        amountText.text = amount.ToString();
+        amountText.text = coinText + amount;
         flag = false;
     }
     #endregion
