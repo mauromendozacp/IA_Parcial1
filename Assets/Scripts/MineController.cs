@@ -80,7 +80,10 @@ public class MineController : MonoBehaviour
 
     private void OnMineEmpty(int id)
     {
-        minesList.RemoveAll((mine) => mine.Id == id);
+        Mine mineEmpty = minesList.Find((mine) => mine.Id == id);
+        minesList.Remove(mineEmpty);
+
+        Destroy(mineEmpty.gameObject);
 
         onMineEmpty?.Invoke();
     }
