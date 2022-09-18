@@ -275,10 +275,10 @@ public class MinerAgent : MonoBehaviour
             targetPos = new Vector3(path[0].x, path[0].y, 0f);
 
             pathIndex = 0;
-            currentPathTimer = speedDelay;
+            currentPathTimer = 0f;
             currentPositionTimer = 0f;
 
-            SetPosition(new Vector3(path[0].x, path[0].y, 0f));
+            waitPosition = false;
 
             onSuccess?.Invoke();
         }
