@@ -10,7 +10,10 @@ public class GameController : MonoBehaviour
     #region UNITY_CALLS
     private void Awake()
     {
-        mapController.Init();
+        mapController.Init((map) =>
+        {
+            minersController.UpdateMapMiners(map);
+        });
 
         MActions mActions = new MActions();
         mActions.onDeposit = mapController.DepositMoneyInBase;

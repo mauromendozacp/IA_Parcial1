@@ -59,6 +59,14 @@ public class MinersController : MonoBehaviour
             miners.Add(miner);
         }
     }
+
+    public void UpdateMapMiners(Node[] map)
+    {
+        Parallel.ForEach(miners, parrallel, minedou =>
+        {
+            minedou.UpdateMap(map);
+        });
+    }
     #endregion
 
     #region PRIVATE_METHODS

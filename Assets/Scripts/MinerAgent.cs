@@ -143,6 +143,11 @@ public class MinerAgent : MonoBehaviour
             });
         }
     }
+
+    public void UpdateMap(Node[] map)
+    {
+        pathfinding.UpdateMap(map);
+    }
     #endregion
 
     #region PRIVATE_METHODS

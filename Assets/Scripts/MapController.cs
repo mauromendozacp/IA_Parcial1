@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using UnityEditor;
@@ -26,6 +27,8 @@ public class MapController : MonoBehaviour
 
     private MinerBase minerBase = null;
     private List<NodeSite> nodeSites = null;
+
+    private Action<Node[]> onUpdateMap = null;
     #endregion
 
     #region PROPERTIES
@@ -55,6 +58,15 @@ public class MapController : MonoBehaviour
     #endregion
 
     #region UNITY_CALLS
+    private void OnValidate()
+    {
+        if (map == null)
+            return;
+
+        SetSpecialNodes();
+        onUpdateMap?.Invoke(map);
+    }
+
     private void OnDrawGizmos()
     {
         if (map == null)
@@ -85,8 +97,10 @@ public class MapController : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init()
+    public void Init(Action<Node[]> onUpdateMap)
     {
+        this.onUpdateMap = onUpdateMap;
+
         NodeUtils.MapSize = mapSize;
         map = new Node[mapSize.x * mapSize.y];
 
@@ -160,6 +174,11 @@ public class MapController : MonoBehaviour
             }
         }
 
+        SetSpecialNodes();
+    }
+
+    private void SetSpecialNodes()
+    {
         for (int i = 0; i < blockeds.Count; i++)
         {
             map[NodeUtils.PositionToIndex(blockeds[i])].Block();

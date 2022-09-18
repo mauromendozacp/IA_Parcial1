@@ -32,7 +32,7 @@ public class Pathfinding
         this.map = new Node[map.Length];
         for (int i = 0; i < this.map.Length; i++)
         {
-            this.map[i] = new Node(map[i].ID, map[i].position);
+            this.map[i] = new Node(map[i].ID, map[i].position, map[i].state, map[i].weight);
         }
 
         openedNodeIds = new List<int>();
@@ -77,6 +77,14 @@ public class Pathfinding
 
         List<Vector2Int> path = GeneratePath(map, currentNode);
         return path;
+    }
+
+    public void UpdateMap(Node[] map)
+    {
+        for (int i = 0; i < this.map.Length; i++)
+        {
+            this.map[i].Update(map[i].state, map[i].weight);
+        }
     }
     #endregion
 

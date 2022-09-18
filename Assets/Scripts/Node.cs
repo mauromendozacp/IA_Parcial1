@@ -22,7 +22,6 @@ public class Node
     public int openerID;
     public int weight;
     public int totalWeight;
-    private int originalWeight;
     #endregion
 
     #region CONSTRUCTS
@@ -37,7 +36,19 @@ public class Node
         openerID = -1;
         weight = 1;
         totalWeight = weight;
-        originalWeight = weight;
+    }
+
+    public Node(int ID, Vector2Int position, NodeState state, int weight)
+    {
+        this.ID = ID;
+        this.position = position;
+        this.state = state;
+        this.weight = weight;
+
+        adjacentNodeIDs = NodeUtils.GetAdjacentsNodeIDs(position);
+        color = Color.white;
+        openerID = -1;
+        totalWeight = weight;
     }
     #endregion
 
@@ -68,7 +79,6 @@ public class Node
         {
             state = NodeState.Ready;
             openerID = -1;
-            weight = originalWeight;
             totalWeight = weight;
         }
     }
@@ -76,9 +86,17 @@ public class Node
     public void SetWeight(int weight)
     {
         this.weight = weight;
-        originalWeight = weight;
-
         color = Color.cyan;
+    }
+
+    public void Update(NodeState state, int weight)
+    {
+        if (state == NodeState.Blocked)
+        {
+            Block();
+        }
+
+        SetWeight(weight);
     }
     #endregion
 }
