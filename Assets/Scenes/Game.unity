@@ -286,7 +286,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 5.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -349,7 +349,6 @@ MonoBehaviour:
   prefab: {fileID: 7855023796394242189, guid: 01741a0b668665f4bb923bab94c962bd, type: 3}
   holder: {fileID: 1658201205}
   length: 5
-  money: 100
 --- !u!4 &644643103
 Transform:
   m_ObjectHideFlags: 0
@@ -394,7 +393,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ef76adfd12207348bdc1b5cded1aca1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathfindingMode: 2
+  pathfindingMode: 3
   minerPrefab: {fileID: 2015442117164511692, guid: 7a810b483df4a2541bfd5f90d8b3e9a9, type: 3}
   minersHolder: {fileID: 1273694045}
   minersLength: 10
@@ -477,8 +476,14 @@ MonoBehaviour:
   mineController: {fileID: 644643102}
   holder: {fileID: 68935574}
   mapSize: {x: 15, y: 10}
-  blockeds: []
-  weights: []
+  blockeds:
+  - {x: 2, y: 2}
+  - {x: 3, y: 3}
+  weights:
+  - position: {x: 5, y: 5}
+    weight: 15
+  - position: {x: 6, y: 6}
+    weight: 15
   basePrefab: {fileID: 1417037415226506896, guid: 06c34beb83c2dec45a5228601d1a4d08, type: 3}
   basePosition: {x: 7, y: 5}
 --- !u!4 &1355100565

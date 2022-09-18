@@ -77,6 +77,8 @@ public class Node
     {
         this.weight = weight;
         originalWeight = weight;
+
+        color = Color.cyan;
     }
     #endregion
 }

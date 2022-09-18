@@ -70,6 +70,17 @@ public class MapController : MonoBehaviour
             Gizmos.DrawWireCube(worldPosition, Vector3.one);
             Handles.Label(worldPosition, node.position.ToString(), style);
         }
+
+        foreach (Node node in map)
+        {
+            if (node.color != Color.white)
+            {
+                Vector3 worldPosition = new Vector3(node.position.x, node.position.y, 0.0f);
+
+                Gizmos.color = node.color;
+                Gizmos.DrawWireCube(worldPosition, Vector3.one);
+            }
+        }
     }
     #endregion
 
