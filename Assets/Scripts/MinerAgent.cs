@@ -26,6 +26,8 @@ public class MinerAgent : MonoBehaviour
     #endregion
 
     #region PRIVATE_FIELDS
+    private int id = 0;
+
     private FSM fsm;
 
     private Pathfinding pathfinding = null;
@@ -94,9 +96,10 @@ public class MinerAgent : MonoBehaviour
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(MActions mActions, Pathfinding.MODE mode, Node[] map, Vector2Int minerPos)
+    public void Init(MActions mActions, int id, Pathfinding.MODE mode, Node[] map, Vector2Int minerPos)
     {
         this.mActions = mActions;
+        this.id = id;
 
         pathfinding = new Pathfinding(mode, map);
 
@@ -177,7 +180,7 @@ public class MinerAgent : MonoBehaviour
     {
         fsm.AddBehaviour((int)States.Idle, () =>
         {
-            Debug.Log("Idle");
+            Debug.Log("Miner " + id + ": Idle");
         }, () =>
         {
             fsm.SetFlag((int)Flags.OnStopMine);
@@ -214,6 +217,7 @@ public class MinerAgent : MonoBehaviour
                 {
                     StartPathfiding(NodeUtils.mineId, () =>
                     {
+                        Debug.Log("Miner " + id + ": " + currentMoney + " recollected.");
                         fsm.SetFlag((int)Flags.OnFindOtherMine);
                     });
                 }
@@ -222,6 +226,7 @@ public class MinerAgent : MonoBehaviour
             {
                 StartPathfiding(NodeUtils.baseId, () =>
                 {
+                    Debug.Log("Miner " + id + ": " + currentMoney + " recollected.");
                     fsm.SetFlag((int)Flags.OnFullInventory);
                 });
             }
@@ -234,6 +239,7 @@ public class MinerAgent : MonoBehaviour
         {
             UpdatePath(() =>
             {
+                Debug.Log("Miner " + id + ": " + currentMoney + " deposited.");
                 mActions.onDeposit?.Invoke(currentMoney);
                 currentMoney = 0;
 
@@ -262,7 +268,7 @@ public class MinerAgent : MonoBehaviour
 
         fsm.AddBehaviour((int)States.Reposing, () =>
         {
-            Debug.Log("Reposing");
+            Debug.Log("Miner " + id + ": Reposing");
         },
         () =>
         {

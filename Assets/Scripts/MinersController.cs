@@ -52,7 +52,7 @@ public class MinersController : MonoBehaviour
             minerGO.transform.position = new Vector3(basePosition.x, basePosition.y, 0f);
 
             MinerAgent miner = minerGO.GetComponent<MinerAgent>();
-            miner.Init(mActions, pathfindingMode, map, basePosition);
+            miner.Init(mActions, i + 1, pathfindingMode, map, basePosition);
             miner.StartMiner();
 
             miners.Add(miner);
