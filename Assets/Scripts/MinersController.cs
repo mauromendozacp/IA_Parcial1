@@ -49,7 +49,7 @@ public class MinersController : MonoBehaviour
         for (int i = 0; i < minersLength; i++)
         {
             GameObject minerGO = Instantiate(minerPrefab, minersHolder);
-            minerGO.transform.position = new Vector3(basePosition.x, basePosition.y, 0f);
+            minerGO.transform.position = new Vector3(basePosition.x, basePosition.y, 0f) + NodeUtils.offset;
 
             MinerAgent miner = minerGO.GetComponent<MinerAgent>();
             miner.Init(mActions, i + 1, pathfindingMode, map, basePosition);

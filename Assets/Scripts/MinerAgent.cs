@@ -106,7 +106,7 @@ public class MinerAgent : MonoBehaviour
         speedDelay = speedDelay * UnityEngine.Random.Range(50f, 100f) / 100f;
         nodePos = minerPos;
 
-        SetPosition(new Vector3(minerPos.x, minerPos.y, 0f));
+        SetPosition(new Vector3(minerPos.x, minerPos.y, 0f) + NodeUtils.offset);
     }
 
     public void StartMiner()
@@ -283,7 +283,7 @@ public class MinerAgent : MonoBehaviour
         if (path != null && path.Count > 0)
         {
             nodePos = path[0];
-            targetPos = new Vector3(path[0].x, path[0].y, 0f);
+            targetPos = new Vector3(path[0].x, path[0].y, 0f) + NodeUtils.offset;
 
             pathIndex = 0;
             currentPathTimer = 0f;
@@ -320,7 +320,7 @@ public class MinerAgent : MonoBehaviour
                 pathIndex++;
                 if (pathIndex < path.Count)
                 {
-                    targetPos = new Vector3(path[pathIndex].x, path[pathIndex].y, 0f);
+                    targetPos = new Vector3(path[pathIndex].x, path[pathIndex].y, 0f) + NodeUtils.offset;
                     waitPosition = true;
                 }
                 else

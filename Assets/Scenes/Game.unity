@@ -427,7 +427,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.2, y: 4.5, z: -10}
+  m_LocalPosition: {x: 8.75, y: 5, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -465,7 +465,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 7855023796394242189, guid: 01741a0b668665f4bb923bab94c962bd, type: 3}
   holder: {fileID: 1658201205}
-  length: 5
+  length: 3
 --- !u!4 &644643103
 Transform:
   m_ObjectHideFlags: 0
@@ -593,6 +593,7 @@ MonoBehaviour:
   mineController: {fileID: 644643102}
   holder: {fileID: 68935574}
   mapSize: {x: 15, y: 10}
+  offset: {x: 1, y: 1, z: 0}
   blockeds:
   - {x: 2, y: 2}
   - {x: 3, y: 3}

@@ -14,6 +14,7 @@ public class MapController : MonoBehaviour
 
     [Header("Map Settings")]
     [SerializeField] private Vector2Int mapSize = Vector2Int.zero;
+    [SerializeField] private Vector3 offset = Vector3.zero;
     [SerializeField] private List<Vector2Int> blockeds = null;
     [SerializeField] private List<NodeWeight> weights = null;
 
@@ -62,17 +63,6 @@ public class MapController : MonoBehaviour
     #endregion
 
     #region UNITY_CALLS
-    private void OnValidate()
-    {
-        if (map == null)
-            return;
-
-        SetSpecialNodes();
-        SpawnBlocks();
-
-        onUpdateMap?.Invoke(map);
-    }
-
     private void OnDrawGizmos()
     {
         if (map == null)
@@ -82,7 +72,7 @@ public class MapController : MonoBehaviour
 
         foreach (Node node in map)
         {
-            Vector3 worldPosition = new Vector3(node.position.x, node.position.y, 0.0f);
+            Vector3 worldPosition = new Vector3(node.position.x, node.position.y, 0.0f) + offset;
 
             Gizmos.color = Color.white;
             Gizmos.DrawWireCube(worldPosition, Vector3.one);
@@ -93,7 +83,7 @@ public class MapController : MonoBehaviour
         {
             if (node.color != Color.white)
             {
-                Vector3 worldPosition = new Vector3(node.position.x, node.position.y, 0.0f);
+                Vector3 worldPosition = new Vector3(node.position.x, node.position.y, 0.0f) + offset;
 
                 Gizmos.color = node.color;
                 Gizmos.DrawWireCube(worldPosition, Vector3.one);
@@ -107,9 +97,10 @@ public class MapController : MonoBehaviour
     {
         this.onUpdateMap = onUpdateMap;
 
-        NodeUtils.MapSize = mapSize;
         map = new Node[mapSize.x * mapSize.y];
 
+        NodeUtils.mapSize = mapSize;
+        NodeUtils.offset = offset;
         NodeUtils.usedPositions.AddRange(blockeds);
         NodeUtils.usedPositions.Add(basePosition);
 
@@ -118,8 +109,16 @@ public class MapController : MonoBehaviour
 
         SetMapData();
 
-        mineController.Init(null);
+        mineController.Init(voronoiController.SetVoronoi);
         voronoiController.Init(GetNodeSitePositionById);
+    }
+
+    public void UpdateMap()
+    {
+        SetSpecialNodes();
+        SpawnBlocks();
+
+        onUpdateMap?.Invoke(map);
     }
 
     public void SpawnSites()
@@ -131,21 +130,6 @@ public class MapController : MonoBehaviour
         for (int i = 0; i < mineController.Mines.Count; i++)
         {
             nodeSites.Add(new NodeSite(NodeUtils.mineId, mineController.Mines[i].Position));
-        }
-    }
-
-    public void SpawnBlocks()
-    {
-        for (int i = 0; i < blockHolder.childCount; i++)
-        {
-            GameObject blockGO = blockHolder.GetChild(i).gameObject;
-            Destroy(blockGO);
-        }
-
-        for (int i = 0; i < blockeds.Count; i++)
-        {
-            GameObject blockGO = Instantiate(blockPrefab, blockHolder);
-            blockGO.transform.position = new Vector3(blockeds[i].x, blockeds[i].y, 0f);
         }
     }
 
@@ -199,6 +183,21 @@ public class MapController : MonoBehaviour
         SetSpecialNodes();
     }
 
+    private void SpawnBlocks()
+    {
+        for (int i = 0; i < blockHolder.childCount; i++)
+        {
+            GameObject blockGO = blockHolder.GetChild(i).gameObject;
+            Destroy(blockGO);
+        }
+
+        for (int i = 0; i < blockeds.Count; i++)
+        {
+            GameObject blockGO = Instantiate(blockPrefab, blockHolder);
+            blockGO.transform.position = new Vector3(blockeds[i].x, blockeds[i].y, 0f) + offset;
+        }
+    }
+
     private void SetSpecialNodes()
     {
         for (int i = 0; i < blockeds.Count; i++)
@@ -214,7 +213,7 @@ public class MapController : MonoBehaviour
     private void SpawnBase()
     {
         GameObject baseGO = Instantiate(basePrefab, holder);
-        baseGO.transform.position = new Vector3(basePosition.x, basePosition.y, 0f);
+        baseGO.transform.position = new Vector3(basePosition.x, basePosition.y, 0f) + offset;
 
         minerBase = baseGO.GetComponent<MinerBase>();
     }
