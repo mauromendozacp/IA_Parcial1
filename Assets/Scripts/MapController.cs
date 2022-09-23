@@ -133,9 +133,9 @@ public class MapController : MonoBehaviour
         }
     }
 
-    public Mine GetMineCloser()
+    public Mine GetMineCloser(Vector3 minerPos)
     {
-        return voronoiController.GetMineCloser(mineController.Mines);
+        return voronoiController.GetMineCloser(minerPos);
     }
 
     public void DepositMoneyInBase(int money)

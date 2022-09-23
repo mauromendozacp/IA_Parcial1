@@ -7,16 +7,21 @@ using UnityEditor;
 public class Sector
 {
     #region PRIVATE_FIELDS
-    private Vector2 point = Vector2.zero;
+    private Mine mine = null;
     private Color color = Color.white;
     private List<Segment> segments = null;
     private List<Vector2> intersections = null;
+    private Vector3[] points = null;
+    #endregion
+
+    #region PROPERTIES
+    public Mine Mine { get => mine; }
     #endregion
 
     #region CONSTRUCTORS
-    public Sector(Vector2 point)
+    public Sector(Mine mine)
     {
-        this.point = point;
+        this.mine = mine;
 
         color = Random.ColorHSV();
         color.a = 0.35f;
@@ -73,13 +78,14 @@ public class Sector
 
         UpdateSegments();
         SortIntersections();
+        SetPointsInSector();
     }
 
     public void AddSegmentLimits(List<Limit> limits)
     {
         for (int i = 0; i < limits.Count; i++)
         {
-            Vector2 origin = point;
+            Vector2 origin = mine.transform.position;
             Vector2 final = limits[i].GetOpositePosition(origin);
 
             segments.Add(new Segment(origin, final));
@@ -88,19 +94,35 @@ public class Sector
 
     public void DrawSector()
     {
-        Vector3[] points = new Vector3[intersections.Count + 1];
-
-        for (int i = 0; i < intersections.Count; i++)
-        {
-            points[i] = new Vector3(intersections[i].x, intersections[i].y, 0f);
-        }
-        points[intersections.Count] = points[0];
-
         Handles.color = color;
         Handles.DrawAAConvexPolygon(points);
 
         Handles.color = Color.black;
         Handles.DrawPolyLine(points);
+    }
+
+    public bool CheckPointInSector(Vector3 point)
+    {
+        bool inside = false;
+
+        Vector2 endPoint = points[^1];
+        float endX = endPoint.x;
+        float endY = endPoint.y;
+
+        for (int i = 0; i < points.Length; i++)
+        {
+            float startX = endX; 
+            float startY = endY;
+
+            endPoint = points[i];
+
+            endX = endPoint.x; 
+            endY = endPoint.y;
+
+            inside ^= (endY > point.y ^ startY > point.y) && ((point.x - endX) < (point.y - endY) * (startX - endX) / (startY - endY));
+        }
+
+        return inside;
     }
     #endregion
 
@@ -179,6 +201,17 @@ public class Sector
         {
             intersections.Add(secondIntersection);
         }
+    }
+
+    private void SetPointsInSector()
+    {
+        points = new Vector3[intersections.Count + 1];
+
+        for (int i = 0; i < intersections.Count; i++)
+        {
+            points[i] = new Vector3(intersections[i].x, intersections[i].y, 0f);
+        }
+        points[intersections.Count] = points[0];
     }
     #endregion
 }

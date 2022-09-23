@@ -9,7 +9,7 @@ public class MActions
 
     public Func<Vector2Int, Node> onGetNodeByPosition = null;
     public Func<string, Node> onGetNodeBySiteId = null;
-    public Func<Mine> onGetMineCloser = null;
+    public Func<Vector3, Mine> onGetMineCloser = null;
 }
 
 public class MinerAgent : MonoBehaviour
@@ -350,7 +350,7 @@ public class MinerAgent : MonoBehaviour
         }
         else if (id == NodeUtils.mineId)
         {
-            targetMine = mActions.onGetMineCloser?.Invoke();
+            targetMine = mActions.onGetMineCloser?.Invoke(pos);
 
             if (targetMine != null)
             {

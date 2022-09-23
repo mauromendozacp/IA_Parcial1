@@ -36,7 +36,7 @@ public class VoronoiController : MonoBehaviour
         sectors.Clear();
         for (int i = 0; i < mines.Count; i++)
         {
-            sectors.Add(new Sector(mines[i].transform.position));
+            sectors.Add(new Sector(mines[i]));
         }
 
         for (int i = 0; i < sectors.Count; i++)
@@ -60,13 +60,16 @@ public class VoronoiController : MonoBehaviour
         }
     }
 
-    public Mine GetMineCloser(List<Mine> mines)
+    public Mine GetMineCloser(Vector3 minerPos)
     {
-        for (int i = 0; i < mines.Count; i++)
+        if (sectors != null)
         {
-            if (!mines[i].IsEmpty)
+            for (int i = 0; i < sectors.Count; i++)
             {
-                return mines[i];
+                if (sectors[i].CheckPointInSector(minerPos))
+                {
+                    return sectors[i].Mine;
+                }
             }
         }
 
