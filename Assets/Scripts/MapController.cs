@@ -34,6 +34,8 @@ public class MapController : MonoBehaviour
     private List<NodeSite> nodeSites = null;
 
     private Action<Node[]> onUpdateMap = null;
+
+    private Color subtractAlpha = new Color(0f, 0f, 0f, 0.85f);
     #endregion
 
     #region PROPERTIES
@@ -74,7 +76,7 @@ public class MapController : MonoBehaviour
         {
             Vector3 worldPosition = new Vector3(node.position.x, node.position.y, 0.0f) + offset;
 
-            Gizmos.color = Color.white;
+            Gizmos.color = Color.white - subtractAlpha;
             Gizmos.DrawWireCube(worldPosition, Vector3.one);
             Handles.Label(worldPosition, node.position.ToString(), style);
         }
