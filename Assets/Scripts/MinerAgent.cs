@@ -127,24 +127,9 @@ public class MinerAgent : MonoBehaviour
         fsm.Update();
     }
 
-    public void SwitchRepose()
+    public void ExitState()
     {
-        reposing = !reposing;
-
-        if (reposing)
-        {
-            StartPathfiding(NodeUtils.baseId, () =>
-            {
-                fsm.SetFlag((int)Flags.OnStopMine);
-            });
-        }
-        else
-        {
-            StartPathfiding(NodeUtils.mineId, () =>
-            {
-                fsm.SetFlag((int)Flags.OnEndRepose);
-            });
-        }
+        fsm.Exit();
     }
 
     public void UpdateMap(Node[] map)
@@ -181,9 +166,6 @@ public class MinerAgent : MonoBehaviour
         fsm.AddBehaviour((int)States.Idle, () =>
         {
             Debug.Log("Miner " + id + ": Idle");
-        }, () =>
-        {
-            fsm.SetFlag((int)Flags.OnStopMine);
         });
 
         fsm.AddBehaviour((int)States.GoToMine, () =>
@@ -192,16 +174,13 @@ public class MinerAgent : MonoBehaviour
             {
                 fsm.SetFlag((int)Flags.OnReachMine);
             });
-        }, () =>
-        {
-            fsm.SetFlag((int)Flags.OnStopMine);
-        });
+        }, WorkingToRepose);
 
         fsm.AddBehaviour((int)States.Mining, () =>
         {
-            if (currentMoney < maxMoney && targetMine != null)
+            if (currentMoney < maxMoney)
             {
-                if (!targetMine.IsEmpty)
+                if (targetMine != null && !targetMine.IsEmpty)
                 {
                     if (miningTimer < recolectDelay)
                     {
@@ -230,10 +209,7 @@ public class MinerAgent : MonoBehaviour
                     fsm.SetFlag((int)Flags.OnFullInventory);
                 });
             }
-        }, () =>
-        {
-            fsm.SetFlag((int)Flags.OnStopMine);
-        });
+        }, WorkingToRepose);
 
         fsm.AddBehaviour((int)States.GoToDeposit, () =>
         {
@@ -248,11 +224,7 @@ public class MinerAgent : MonoBehaviour
                     fsm.SetFlag((int)Flags.OnReachDeposit);
                 });
             });
-        },
-        () =>
-        {
-            fsm.SetFlag((int)Flags.OnStopMine);
-        });
+        }, WorkingToRepose);
 
         fsm.AddBehaviour((int)States.GoToRepose, () =>
         {
@@ -260,20 +232,12 @@ public class MinerAgent : MonoBehaviour
             {
                 fsm.SetFlag((int)Flags.OnReachRepose);
             });
-        },
-        () =>
-        {
-            fsm.SetFlag((int)Flags.OnEndRepose);
-        });
+        }, ReposeToWorking);
 
         fsm.AddBehaviour((int)States.Reposing, () =>
         {
             Debug.Log("Miner " + id + ": Reposing");
-        },
-        () =>
-        {
-            fsm.SetFlag((int)Flags.OnEndRepose);
-        });
+        }, ReposeToWorking);
     }
 
     private void StartPathfiding(string siteId, Action onSuccess)
@@ -356,9 +320,29 @@ public class MinerAgent : MonoBehaviour
             {
                 node = mActions.onGetNodeByPosition?.Invoke(targetMine.Position);
             }
+            else
+            {
+                node = mActions.onGetNodeBySiteId?.Invoke("base");
+            }
         }
 
         return node;
+    }
+
+    private void WorkingToRepose()
+    {
+        StartPathfiding(NodeUtils.baseId, () =>
+        {
+            fsm.SetFlag((int)Flags.OnStopMine);
+        });
+    }
+
+    private void ReposeToWorking()
+    {
+        StartPathfiding(NodeUtils.mineId, () =>
+        {
+            fsm.SetFlag((int)Flags.OnEndRepose);
+        });
     }
     #endregion
 }

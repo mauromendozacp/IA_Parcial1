@@ -3,28 +3,37 @@ using System.Collections.Generic;
 
 public class State
 {
-    public List<Action> behaviours;
-    public Action onAbruptExit;
+    public List<Action> behaviours = null;
+    public Action onAbruptExit = null;
 }
 
 public class FSM
 {
-    private int currentState;
-    private int[,] relations;
-    private Dictionary<int, State> behaviours;
+    #region PRIVATE_FIELDS
+    private int currentState = 0;
+    private int[,] relations = null;
+    private Dictionary<int, State> behaviours = null;
+    #endregion
 
+    #region CONSTRUCTORS
     public FSM(int states, int flags)
     {
         currentState = -1;
 
         relations = new int[states, flags];
         for (int i = 0; i < states; i++)
+        {
             for (int j = 0; j < flags; j++)
+            {
                 relations[i, j] = -1;
+            }
+        }
 
         behaviours = new Dictionary<int, State>();
     }
+    #endregion
 
+    #region PUBLIC_METHODS
     public void ForceCurretState(int state)
     {
         currentState = state;
@@ -100,4 +109,5 @@ public class FSM
             }
         }
     }
+    #endregion
 }

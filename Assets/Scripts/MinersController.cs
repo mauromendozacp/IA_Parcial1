@@ -75,7 +75,7 @@ public class MinersController : MonoBehaviour
         {
             Parallel.ForEach(miners, parrallel, minedou =>
             {
-                minedou.SwitchRepose();
+                minedou.ExitState();
             });
         }
     }
