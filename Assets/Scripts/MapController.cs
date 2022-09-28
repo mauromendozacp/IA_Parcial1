@@ -35,7 +35,7 @@ public class MapController : MonoBehaviour
 
     private Action<Node[]> onUpdateMap = null;
 
-    private Color subtractAlpha = new Color(0f, 0f, 0f, 0.85f);
+    private Color subtractAlpha = new Color(0f, 0f, 0f, 0.95f);
     #endregion
 
     #region PROPERTIES
@@ -112,7 +112,7 @@ public class MapController : MonoBehaviour
         SetMapData();
 
         mineController.Init(voronoiController.SetVoronoi);
-        voronoiController.Init(GetNodeSitePositionById);
+        voronoiController.Init();
     }
 
     public void UpdateMap()

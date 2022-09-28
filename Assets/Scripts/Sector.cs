@@ -37,6 +37,23 @@ public class Sector
         segments.Add(new Segment(origin, final));
     }
 
+    public void DrawSegments()
+    {
+        for (int i = 0; i < segments.Count; i++)
+        {
+            segments[i].Draw();
+        }
+    }
+
+    public void DrawSector()
+    {
+        Handles.color = color;
+        Handles.DrawAAConvexPolygon(points);
+
+        Handles.color = Color.black;
+        Handles.DrawPolyLine(points);
+    }
+
     public void SetIntersections()
     {
         intersections.Clear();
@@ -47,20 +64,28 @@ public class Sector
             {
                 if (i == j) continue;
 
-                segments[i].GetTwoPoints(out Vector2 p1, out Vector2 p2);
-                segments[j].GetTwoPoints(out Vector2 p3, out Vector2 p4);
-                Vector2 intersectionPoint = Segment.GetIntersection(p1, p2, p3, p4);
+                Vector2 intersectionPoint = GetIntersection(segments[i], segments[j]);
 
                 if (intersections.Contains(intersectionPoint)) continue;
 
-                float maxDist = Vector2.Distance(intersectionPoint, segments[i].Origin);
+                float maxDistance = Vector2.Distance(intersectionPoint, segments[i].Origin);
+                for (int k = 0; k < segments.Count; k++)
+                {
+                    if (k == j) continue;
+
+                    float dist = Vector2.Distance(intersectionPoint, segments[k].Origin);
+                    if (dist < maxDistance)
+                    {
+                        maxDistance = dist;
+                    }
+                }
 
                 bool hasOtherPoint = false;
                 for (int k = 0; k < segments.Count; k++)
                 {
                     if (k == i || k == j) continue;
 
-                    if (HasOtherPointInIntersection(intersectionPoint, segments[k].Final, maxDist))
+                    if (HasOtherPointInIntersection(intersectionPoint, segments[k].Final, maxDistance))
                     {
                         hasOtherPoint = true;
                         break;
@@ -76,7 +101,7 @@ public class Sector
             }
         }
 
-        UpdateSegments();
+        CleanUnusedSegments();
         SortIntersections();
         SetPointsInSector();
     }
@@ -92,18 +117,11 @@ public class Sector
         }
     }
 
-    public void DrawSector()
-    {
-        Handles.color = color;
-        Handles.DrawAAConvexPolygon(points);
-
-        Handles.color = Color.black;
-        Handles.DrawPolyLine(points);
-    }
-
     public bool CheckPointInSector(Vector3 point)
     {
         bool inside = false;
+
+        if (points == null) return false;
 
         Vector2 endPoint = points[^1];
         float endX = endPoint.x;
@@ -133,18 +151,18 @@ public class Sector
         return distance < maxDistance;
     }
 
-    private void UpdateSegments()
+    private void CleanUnusedSegments()
     {
-        List<Segment> noIntersectionSegments = new List<Segment>();
+        List<Segment> unusedSegments = new List<Segment>();
         for (int i = 0; i < segments.Count; i++)
         {
             if (segments[i].Intersections.Count != 2)
             {
-                noIntersectionSegments.Add(segments[i]);
+                unusedSegments.Add(segments[i]);
             }
         }
 
-        segments = segments.Except(noIntersectionSegments).ToList();
+        segments = segments.Except(unusedSegments).ToList();
     }
 
     private void SortIntersections()
@@ -212,6 +230,23 @@ public class Sector
             points[i] = new Vector3(intersections[i].x, intersections[i].y, 0f);
         }
         points[intersections.Count] = points[0];
+    }
+
+    public Vector2 GetIntersection(Segment seg1, Segment seg2)
+    {
+        Vector2 intersection = Vector2.zero;
+
+        Vector2 p1 = seg1.Mediatrix;
+        Vector2 p2 = seg1.Mediatrix + seg1.Direction * NodeUtils.mapSize.magnitude;
+        Vector2 p3 = seg2.Mediatrix;
+        Vector2 p4 = seg2.Mediatrix + seg2.Direction * NodeUtils.mapSize.magnitude;
+
+        if (((p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x)) == 0) return intersection;
+
+        intersection.x = ((p1.x * p2.y - p1.y * p2.x) * (p3.x - p4.x) - (p1.x - p2.x) * (p3.x * p4.y - p3.y * p4.x)) / ((p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x));
+        intersection.y = ((p1.x * p2.y - p1.y * p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x * p4.y - p3.y * p4.x)) / ((p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x));
+
+        return intersection;
     }
     #endregion
 }

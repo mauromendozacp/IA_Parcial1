@@ -5,25 +5,25 @@ using UnityEngine;
 
 public class VoronoiController : MonoBehaviour
 {
+    #region EXPOSED_FIELDS
+    [SerializeField] private bool drawSegments = false;
+    #endregion
+
     #region PRIVATE_FIELDS
     private List<Limit> limits = null;
     private List<Sector> sectors = null;
-
-    private Func<string, Vector2Int> onGetPositionBySiteId = null;
     #endregion
 
     #region UNITY_CALLS
     private void OnDrawGizmos()
     {
-        DrawSectors();
+        Draw();
     }
     #endregion
 
     #region PUBLIC_METHODS
-    public void Init(Func<string, Vector2Int> onGetPositionBySiteId)
+    public void Init()
     {
-        this.onGetPositionBySiteId = onGetPositionBySiteId;
-
         sectors = new List<Sector>();
 
         InitLimits();
@@ -31,9 +31,9 @@ public class VoronoiController : MonoBehaviour
 
     public void SetVoronoi(List<Mine> mines)
     {
+        sectors.Clear();
         if (mines.Count == 0) return;
 
-        sectors.Clear();
         for (int i = 0; i < mines.Count; i++)
         {
             sectors.Add(new Sector(mines[i]));
@@ -90,13 +90,18 @@ public class VoronoiController : MonoBehaviour
         limits.Add(new Limit(new Vector2(NodeUtils.mapSize.x, 0f) + offset, DIRECTION.DOWN));
     }
 
-    private void DrawSectors()
+    private void Draw()
     {
         if (sectors == null) return;
 
         for (int i = 0; i < sectors.Count; i++)
         {
             sectors[i].DrawSector();
+
+            if (drawSegments)
+            {
+                sectors[i].DrawSegments();
+            }
         }
     }
     #endregion
