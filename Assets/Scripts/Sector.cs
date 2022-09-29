@@ -69,30 +69,20 @@ public class Sector
                 if (intersections.Contains(intersectionPoint)) continue;
 
                 float maxDistance = Vector2.Distance(intersectionPoint, segments[i].Origin);
-                for (int k = 0; k < segments.Count; k++)
-                {
-                    if (k == j) continue;
 
-                    float dist = Vector2.Distance(intersectionPoint, segments[k].Origin);
-                    if (dist < maxDistance)
-                    {
-                        maxDistance = dist;
-                    }
-                }
-
-                bool hasOtherPoint = false;
+                bool checkValidPoint = false;
                 for (int k = 0; k < segments.Count; k++)
                 {
                     if (k == i || k == j) continue;
 
-                    if (HasOtherPointInIntersection(intersectionPoint, segments[k].Final, maxDistance))
+                    if (CheckOtherPointInIntersection(intersectionPoint, segments[k].Final, maxDistance))
                     {
-                        hasOtherPoint = true;
+                        checkValidPoint = true;
                         break;
                     }
                 }
 
-                if (!hasOtherPoint)
+                if (!checkValidPoint)
                 {
                     intersections.Add(intersectionPoint);
                     segments[i].Intersections.Add(intersectionPoint);
@@ -100,8 +90,8 @@ public class Sector
                 }
             }
         }
+        segments.RemoveAll((s) => s.Intersections.Count != 2);
 
-        CleanUnusedSegments();
         SortIntersections();
         SetPointsInSector();
     }
@@ -111,7 +101,7 @@ public class Sector
         for (int i = 0; i < limits.Count; i++)
         {
             Vector2 origin = mine.transform.position;
-            Vector2 final = limits[i].GetOpositePosition(origin);
+            Vector2 final = limits[i].GetOutsitePosition(origin);
 
             segments.Add(new Segment(origin, final));
         }
@@ -145,79 +135,54 @@ public class Sector
     #endregion
 
     #region PRIVATE_METHODS
-    private bool HasOtherPointInIntersection(Vector2 intersectionPoint, Vector2 pointEnd, float maxDistance)
+    private bool CheckOtherPointInIntersection(Vector2 intersectionPoint, Vector2 pointEnd, float maxDistance)
     {
         float distance = Vector2.Distance(intersectionPoint, pointEnd);
         return distance < maxDistance;
     }
 
-    private void CleanUnusedSegments()
-    {
-        List<Segment> unusedSegments = new List<Segment>();
-        for (int i = 0; i < segments.Count; i++)
-        {
-            if (segments[i].Intersections.Count != 2)
-            {
-                unusedSegments.Add(segments[i]);
-            }
-        }
-
-        segments = segments.Except(unusedSegments).ToList();
-    }
-
     private void SortIntersections()
     {
-        intersections.Clear();
-
-        if (segments.Count == 0) return;
-
-        Vector2 lastIntersection = segments[0].Intersections[0];
-        intersections.Add(lastIntersection);
-
-        Vector2 firstIntersection;
-        Vector2 secondIntersection;
-
-        for (int i = 0; i < segments.Count; i++)
+        List<IntersectionPoint> intersectionPoints = new List<IntersectionPoint>();
+        for (int i = 0; i < intersections.Count; i++)
         {
-            for (int j = 0; j < segments.Count; j++)
+            intersectionPoints.Add(new IntersectionPoint(intersections[i]));
+        }
+
+        float minX = intersectionPoints[0].Position.x;
+        float maxX = intersectionPoints[0].Position.x;
+        float minY = intersectionPoints[0].Position.y;
+        float maxY = intersectionPoints[0].Position.y;
+
+        for (int i = 0; i < intersections.Count; i++)
+        {
+            if (intersectionPoints[i].Position.x < minX) minX = intersectionPoints[i].Position.x;
+            if (intersectionPoints[i].Position.x > maxX) maxX = intersectionPoints[i].Position.x;
+            if (intersectionPoints[i].Position.y < minY) minY = intersectionPoints[i].Position.y;
+            if (intersectionPoints[i].Position.y > maxY) maxY = intersectionPoints[i].Position.y;
+        }
+
+        Vector2 center = new Vector2(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
+
+        for (int i = 0; i < intersectionPoints.Count; i++)
+        {
+            Vector2 pos = intersectionPoints[i].Position;
+
+            intersectionPoints[i].Angle = Mathf.Acos((pos.x - center.x) / 
+                Mathf.Sqrt(Mathf.Pow(pos.x - center.x, 2f) + Mathf.Pow(pos.y - center.y, 2f)));
+
+            if (pos.y > center.y)
             {
-                if (i == j) continue;
-
-                firstIntersection = segments[j].Intersections[0];
-                secondIntersection = segments[j].Intersections[1];
-
-                if (!intersections.Contains(secondIntersection))
-                {
-                    if (firstIntersection == lastIntersection)
-                    {
-                        intersections.Add(secondIntersection);
-                        lastIntersection = secondIntersection;
-                        break;
-                    }
-                }
-
-                if (!intersections.Contains(firstIntersection))
-                {
-                    if (secondIntersection == lastIntersection)
-                    {
-                        intersections.Add(firstIntersection);
-                        lastIntersection = firstIntersection;
-                        break;
-                    }
-                }
+                intersectionPoints[i].Angle = Mathf.PI + Mathf.PI - intersectionPoints[i].Angle;
             }
         }
 
-        firstIntersection = segments[^1].Intersections[0];
-        if (!intersections.Contains(firstIntersection))
-        {
-            intersections.Add(firstIntersection);
-        }
+        intersectionPoints = intersectionPoints.OrderBy(p => p.Angle).ToList();
 
-        secondIntersection = segments[^1].Intersections[1];
-        if (!intersections.Contains(secondIntersection))
+        intersections.Clear();
+        for (int i = 0; i < intersectionPoints.Count; i++)
         {
-            intersections.Add(secondIntersection);
+            intersections.Add(intersectionPoints[i].Position);
         }
     }
 

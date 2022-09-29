@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f773c52499d84b4cabec109254c3e1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  drawSegments: 1
+  drawSegments: 0
 --- !u!4 &17631132
 Transform:
   m_ObjectHideFlags: 0
@@ -510,7 +510,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 7855023796394242189, guid: 01741a0b668665f4bb923bab94c962bd, type: 3}
   holder: {fileID: 1658201205}
-  length: 5
+  length: 8
 --- !u!4 &644643103
 Transform:
   m_ObjectHideFlags: 0
