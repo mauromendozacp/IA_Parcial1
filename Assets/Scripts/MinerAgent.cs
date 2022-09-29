@@ -42,7 +42,6 @@ public class MinerAgent : MonoBehaviour
     private float miningTimer = 0f;
     private float currentPathTimer = 0f;
     private float currentPositionTimer = 0f;
-    private bool reposing = false;
     private bool waitPosition = false;
 
     private int currentMoney = 0;

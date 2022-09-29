@@ -75,7 +75,7 @@ public class Sector
                 {
                     if (k == i || k == j) continue;
 
-                    if (CheckOtherPointInIntersection(intersectionPoint, segments[k].Final, maxDistance))
+                    if (CheckIfHaveAnotherPositionCloser(intersectionPoint, segments[k].Final, maxDistance))
                     {
                         checkValidPoint = true;
                         break;
@@ -135,7 +135,7 @@ public class Sector
     #endregion
 
     #region PRIVATE_METHODS
-    private bool CheckOtherPointInIntersection(Vector2 intersectionPoint, Vector2 pointEnd, float maxDistance)
+    private bool CheckIfHaveAnotherPositionCloser(Vector2 intersectionPoint, Vector2 pointEnd, float maxDistance)
     {
         float distance = Vector2.Distance(intersectionPoint, pointEnd);
         return distance < maxDistance;
